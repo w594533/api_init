@@ -10,6 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::any('/wechat', 'WeChatController@serve');
 
 Route::get('/', function () {
     return view('welcome');
