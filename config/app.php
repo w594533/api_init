@@ -177,7 +177,8 @@ return [
         Overtrue\LaravelWeChat\ServiceProvider::class,
         App\Providers\EasySmsServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
-        Intervention\Image\ImageServiceProvider::class
+        Intervention\Image\ImageServiceProvider::class,
+        Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
 
     ],
 

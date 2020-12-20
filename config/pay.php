@@ -16,7 +16,7 @@ return [
         'key'         => env('WECHAT_PAYMENT_KEY', ''), // 设置的 API 密钥
         'cert_client' => config('wechat.payment.default.cert_path'),
         'cert_key'    => config('wechat.payment.default.key_path'),
-        'notify_url' => config('app.url') . '/payment/wechat/notify',
+        'notify_url'  => config('wechat.payment.default.notify_url'),
         'log'         => [
             'file' => storage_path('logs/wechat_pay.log'),
         ],

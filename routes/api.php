@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +16,15 @@ use Illuminate\Http\Request;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::group([
+    'namespace'     => '\App\Http\Controllers\Api',
+    'middleware'    => []
+], function (Router $router) {
+    $router->get('order/{order}', 'OrderController@show');
+    $router->get('order', 'OrderController@index');
+    $router->post('order/{order}/pay', 'OrderController@pay');
+    $router->post('order', 'OrderController@buy');
+    $router->get('order/{order}/find', 'OrderController@find'); # 订单查询
 });

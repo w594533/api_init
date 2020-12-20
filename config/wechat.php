@@ -114,7 +114,7 @@ return [
             'key'                => env('WECHAT_PAYMENT_KEY', 'key-for-signature'),
             'cert_path'          => env('WECHAT_PAYMENT_CERT_PATH', resource_path('wechat_pay/apiclient_cert.pem')),    // XXX: 绝对路径！！！！
             'key_path'           => env('WECHAT_PAYMENT_KEY_PATH', resource_path('wechat_pay/apiclient_key.pem')),      // XXX: 绝对路径！！！！
-            'notify_url'         => 'http://example.com/payments/wechat-notify',                           // 默认支付结果通知地址
+            'notify_url'         => config('app.url') . '/payment/wechat/notify',                       // 默认支付结果通知地址
         ],
         // ...
     ],
