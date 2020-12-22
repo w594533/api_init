@@ -42,6 +42,9 @@ class PaymentController
         exit('支付成功');
     }
 
+    /**
+     * 支付支付结果通知
+     */
     public function alipayNotify()
     {
          // 校验输入参数
@@ -68,35 +71,42 @@ class PaymentController
             return app('alipay')->success();
         }
 
-        $this->afterPaid($order, Order::PAYMENT_METHOD_ALIPAY, $data);
+        $this->afterPaid($order, Order::PAYMENT_METHOD_ALIPAY, $data->toArray());
 
         return app('alipay')->success();
     }
 
+    /**
+     * 微信支付结果通知
+     */
     public function wechatNotify()
     {
-        // 校验回调参数是否正确
-        $data  = app('wechat_pay')->verify();
-        \Log::debug('微信支付返回结果', [$data]);
-
-        // 找到对应的订单
-        $order = Order::where('no', $data->out_trade_no)->first();
-        // 订单不存在则告知微信支付
-        if (!$order) {
-            return 'fail';
-        }
-        // 订单已支付
-        if ($order->paid_at) {
-            // 告知微信支付此订单已处理
-            return app('wechat_pay')->success();
-        }
-
-        //判断支付金额是否与订单一致，暂不判断
-        if (isset($data->result_code) && $data->result_code == 'SUCCESS') {
-            $this->afterPaid($order, Order::PAYMENT_METHOD_WEXIN, $data);
-        }
-
-        return app('wechat_pay')->success();
+        $app = app('wechat.payment');
+        $response = $app->handlePaidNotify(function($message, $fail){
+            // 使用通知里的 "微信支付订单号" 或者 "商户订单号" 去自己的数据库找到订单
+            $order = Order::where('no', $message['out_trade_no'])->first();
+        
+            if (!$order || $order->paid_at) { // 如果订单不存在 或者 订单已经支付过了
+                return true; // 告诉微信，我已经处理完了，订单没找到，别再通知我了
+            }
+        
+            ///////////// <- 建议在这里调用微信的【订单查询】接口查一下该笔订单的情况，确认是已经支付 /////////////
+        
+            if ($message['return_code'] === 'SUCCESS') { // return_code 表示通信状态，不代表支付状态
+                // 用户是否支付成功
+                if (array_get($message, 'result_code') === 'SUCCESS') {
+                    $this->afterPaid($order, Order::PAYMENT_METHOD_WEXIN, $message);
+                } elseif (array_get($message, 'result_code') === 'FAIL') {
+                    // 用户支付失败
+                    // $order->status = 'paid_fail';
+                }
+            } else {
+                \Log::info($message['out_trade_no'] . '通信失败，请稍后再通知我');
+                return $fail('通信失败，请稍后再通知我');
+            }
+            return true; // 返回处理完成
+        });
+        return $response;
     }
 
     private function afterPaid($order, $payment_method, $callback_data)

@@ -25,6 +25,7 @@ class PaymentService{
          return [
             'form' => app('alipay')->web($pay)->send()
         ];
+        //如果是原生html,直接使用return app('alipay')->web($pay)
     }
 
     public function createWeixinParameters($order_data, $client)
@@ -96,7 +97,8 @@ class PaymentService{
             'total_fee' => app()->environment() !== 'production' ? 0.01 * 100 : $order['total_price'] * 100, //单位，分
             'trade_type' => $trade_type, // 请对应换成你的支付方式对应的值类型
             'openid' => $trade_type == 'JSAPI' ? (new WechatService())->getOpenId() : '',
-            'product_id' => $trade_type == 'NATIVE' ? date("YmdHis") . $order['id'] : ''
+            'product_id' => $trade_type == 'NATIVE' ? date("YmdHis") . $order['id'] : '',
+            'attach' => isset($order['attach']) ? $order['attach'] : '', #附加数据
         ];
     }
 }

@@ -68,18 +68,19 @@ class OrderService{
         } else {
             throw new InvalidRequestException('不支持的支付方式');
         }
+        $result['client'] = $client;
 
         return $result;
     }
 
     public function afterPaid($order, $payment_method, $callback_data)
     {
-        $payment_no = $payment_method == Order::PAYMENT_METHOD_ALIPAY ? $callback_data->trade_no : $callback_data->transaction_id;
+        $payment_no = $payment_method == Order::PAYMENT_METHOD_ALIPAY ? $callback_data['trade_no'] : $callback_data['transaction_id'];
         $order->update([
             'paid_at' => 1, 
             'status' => Order::STATUS_PAID, 
             'payment_method' => $payment_method, 
-            'callback_data' => json_encode($callback_data->toArray()),
+            'callback_data' => json_encode($callback_data),
             'payment_no' => $payment_no
         ]);
     }
