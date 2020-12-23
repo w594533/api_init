@@ -85,12 +85,14 @@ class PaymentService{
      */
     private function unifyParameters($order, $trade_type)
     {
+        \Log::info($trade_type);
         if ($trade_type == 'JSAPI') {
             $openid = (new WechatService())->getOpenId();
             if (!$openid) {
                 throw new InvalidRequestException('支付错误');
             }
         }
+        
         return [
             'body' => $order['title'],
             'out_trade_no' => $order['no'],

@@ -24,7 +24,11 @@ Route::group([
 ], function (Router $router) {
     $router->get('order/{order}', 'OrderController@show');
     $router->get('order', 'OrderController@index');
-    $router->post('order/{order}/pay', 'OrderController@pay');
+    $router->post('order_pay/{order}', 'OrderController@pay');
     $router->post('order', 'OrderController@buy');
     $router->get('order/{order}/find', 'OrderController@find'); # 订单查询
+
+    //微信授权
+    $router->get('oauth_url', 'OauthController@get_oauth_redirect_url');
+    $router->get('oauth', 'OauthController@oauth');
 });

@@ -57,20 +57,25 @@ class OrderService{
     public function create_pay_return($request, $order, $client, $alipay_method = 'POST')
     {
         $weixin_parameters = null;
+        $return_data = [];
         $order_data = $order->toArray();
         if ($order->payment_method == Order::PAYMENT_METHOD_WEXIN) {
             $result = (new PaymentService())->createWeixinParameters($order_data, $client);
+            \Log::debug($result);
+            $return_data['wexin_parames'] = $result;
+            
         } else if ($order->payment_method == Order::PAYMENT_METHOD_ALIPAY) {
             $default_return_url = $request->expectsJson() ? route('payment.alipay.api_return') : route('payment.alipay.return');
             $order_data['return_url'] = $request->input('return_url', $default_return_url); # 这里的returnurl可以根据是api请求或者普通请求改变
             
             $result = (new PaymentService())->createAlipayParameters($order_data, $client, $alipay_method);
+            $$return_data = $result;
         } else {
             throw new InvalidRequestException('不支持的支付方式');
         }
-        $result['client'] = $client;
+        $return_data['client'] = $client;
 
-        return $result;
+        return $return_data;
     }
 
     public function afterPaid($order, $payment_method, $callback_data)

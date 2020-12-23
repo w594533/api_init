@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use Log;
 use Illuminate\Http\Request;
 use App\Services\WechatService;
 
-class WeChatController extends Controller
+class OauthController extends Controller
 {
 
     /**
@@ -25,5 +25,17 @@ class WeChatController extends Controller
         });
 
         return $app->server->serve();
+    }
+
+    public function get_oauth_redirect_url(Request $request, WechatService $service)
+    {
+        $result = $service->getOauthRedirectUrl($request);
+        return $this->success($result);
+    }
+
+    public function oauth(Request $request, WechatService $service)
+    {
+        $result = $service->oauthByCode($request);
+        return $this->success($result);
     }
 }
