@@ -37,44 +37,27 @@ class WechatService extends BaseService
         return $userId;
     }
 
-    public function oauthByCode($request)
+    public function oauthByCode($code)
     {
-        if (!$request->has('code') || !$request->code) {
-            throw new InvalidRequestException('code参数错误');
-        }
-        $code = $request->code;
-
         $app = app('wechat.official_account');
-        //跟进code获取token
+        //根据code获取token
         $token = $app->oauth->scopes(['snsapi_userinfo'])->getAccessToken($code);
         if (is_null($token) && $this->hasInvalidState()) {
             throw new InvalidRequestException('wechat token错误');
         }
-
         \Log::debug('token', [$token]);
         $user = $app->oauth->scopes(['snsapi_userinfo'])->user($token);
         \Log::debug('user', [$user]);
-        return [
-            'openid' => $user->getId()
-        ];
+        return $user;
     }
 
     /**
      * @param redirect_url 需要跳转的链接，就是带有code的链接
      * 获取拼接后的授权链接
      */
-    public function getOauthRedirectUrl($request)
+    public function getOauthRedirectUrl($redirect_url, $scope = 'snsapi_userinfo')
     {
-        if (!$request->has('redirect_url') || !$request->redirect_url) {
-            throw new InvalidRequestException('参数跳转链接错误');
-        }
-        $app = app('wechat.official_account');
-        // \Log::info($app->oauth->buildAuthUrlFromBase($request->redirect_url, 'snsapi_userinfo'));
-        $redirectUrl = $this->oauth2_url . 'appid='.config('wechat.official_account.default.app_id').'&redirect_uri='.$request->redirect_url.'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
-        
-        // $redirectUrl = $app->oauth->scopes(['snsapi_userinfo'])->redirect($request->redirect_url);
-        \Log::debug('$redirectUrl', [$redirectUrl]);
-        // header("Location: {$redirectUrl}");
-        return ['url' => $redirectUrl];
+        $redirectUrl = $this->oauth2_url . 'appid='.config('wechat.official_account.default.app_id').'&redirect_uri='.$redirect_url.'&response_type=code&scope='.$scope.'&state=STATE#wechat_redirect';
+        return $redirectUrl;
     }
 }

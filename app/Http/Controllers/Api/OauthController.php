@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use Log;
 use Illuminate\Http\Request;
+use App\Http\Requests\OauthRequest;
+use App\Services\OauthService;
 use App\Services\WechatService;
 
 class OauthController extends Controller
@@ -27,15 +29,36 @@ class OauthController extends Controller
         return $app->server->serve();
     }
 
-    public function get_oauth_redirect_url(Request $request, WechatService $service)
+    /**
+     * 登录
+     */
+    public function login(OauthRequest $request, OauthService $service)
     {
-        $result = $service->getOauthRedirectUrl($request);
+        $result = $service->login($request);
         return $this->success($result);
     }
 
-    public function oauth(Request $request, WechatService $service)
+    public function register(OauthRequest $request, OauthService $service)
     {
-        $result = $service->oauthByCode($request);
+        $result = $service->register($request);
+        return $this->message('注册成功');
+    }
+
+    /**
+     * 获取授权跳转链接
+     */
+    public function wechat_oauth_redirect_url(Request $request, OauthService $service)
+    {
+        $result = $service->wechatOauthRedirectUrl($request);
+        return $this->success($result);
+    }
+
+    /**
+     * 根据传递code获取，openid,以及微信用户信息
+     */
+    public function wechat_oauth(Request $request, OauthService $service)
+    {
+        $result = $service->wechatOauth($request);
         return $this->success($result);
     }
 }

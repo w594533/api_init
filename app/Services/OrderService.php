@@ -37,6 +37,9 @@ class OrderService{
     public function pay($id, $request, $client, $alipay_method = 'POST')
     {
         $order = Order::findOrFail($id);
+        if ($order->paid_at) {
+            throw new InvalidRequestException('订单已支付');
+        }
         $order->update(['payment_method' => $request->payment_method]);
         return $this->create_pay_return($request, $order, $client, $alipay_method);
     }
@@ -60,6 +63,7 @@ class OrderService{
         $return_data = [];
         $order_data = $order->toArray();
         if ($order->payment_method == Order::PAYMENT_METHOD_WEXIN) {
+            $order_data['openid'] = isset($request->openid) ? $request->openid : '';
             $result = (new PaymentService())->createWeixinParameters($order_data, $client);
             \Log::debug($result);
             $return_data['wexin_parames'] = $result;
@@ -82,7 +86,7 @@ class OrderService{
     {
         $payment_no = $payment_method == Order::PAYMENT_METHOD_ALIPAY ? $callback_data['trade_no'] : $callback_data['transaction_id'];
         $order->update([
-            'paid_at' => 1, 
+            'paid_at' => date("Y-m-d H:i:s"), 
             'status' => Order::STATUS_PAID, 
             'payment_method' => $payment_method, 
             'callback_data' => json_encode($callback_data),

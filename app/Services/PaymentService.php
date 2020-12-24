@@ -87,9 +87,8 @@ class PaymentService{
     {
         \Log::info($trade_type);
         if ($trade_type == 'JSAPI') {
-            $openid = (new WechatService())->getOpenId();
-            if (!$openid) {
-                throw new InvalidRequestException('支付错误');
+            if (!$order['openid']) {
+                throw new InvalidRequestException('openid 参数错误');
             }
         }
         
@@ -98,7 +97,7 @@ class PaymentService{
             'out_trade_no' => $order['no'],
             'total_fee' => app()->environment() !== 'production' ? 0.01 * 100 : $order['total_price'] * 100, //单位，分
             'trade_type' => $trade_type, // 请对应换成你的支付方式对应的值类型
-            'openid' => $trade_type == 'JSAPI' ? (new WechatService())->getOpenId() : '',
+            'openid' => $trade_type == 'JSAPI' ? $order['openid'] : '',
             'product_id' => $trade_type == 'NATIVE' ? date("YmdHis") . $order['id'] : '',
             'attach' => isset($order['attach']) ? $order['attach'] : '', #附加数据
         ];
