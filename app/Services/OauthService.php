@@ -36,11 +36,11 @@ class OauthService extends BaseService
         if (!$user) {
             throw new InvalidRequestException('账号或者密码错误');
         }
-        if (!\hash_equals($user->password, $request->password)) {
+        // $pwd = Hash::make($request->password);
+        if (!Hash::check($request->password, $user->password)) {
             throw new InvalidRequestException('账号或者密码错误');
         }
-
-        $token = auth('api')->login($user);
+        $token = Auth::guard('api')->fromUser($user);
         return [
             'access_token' => $token,
             'token_type' => 'Bearer'
