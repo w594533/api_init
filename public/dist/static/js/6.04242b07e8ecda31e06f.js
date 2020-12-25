@@ -1,2 +1,0 @@
-webpackJsonp([6],{NBc0:function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var r={render:function(){var e=this.$createElement;return(this._self._c||e)("div",[this._v("注册")])},staticRenderFns:[]},u=n("C7Lr")({name:"注册",data:function(){return{}}},r,!1,null,null,null);t.default=u.exports}});
-//# sourceMappingURL=6.04242b07e8ecda31e06f.js.map
