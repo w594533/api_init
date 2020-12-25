@@ -49,19 +49,26 @@ class OauthService extends BaseService
 
     public function storeUser($user)
     {
-        if (isset($user['openid']) && $user['openid'] && !User::where('openid', $user['openid'])->exists()) {
-            $user = new User([
-                'account' => isset($user['account']) ? $user['account'] : '',
-                'password' => isset($user['password']) ? Hash::make($user['password']) : '',
-                'openid' => isset($user['openid']) ? $user['openid'] : '',
-                'nickname' => isset($user['nickname']) ? $user['nickname'] : '',
-                'name' => isset($user['name']) ? $user['name'] : '',
-                'avatar' => isset($user['avatar']) ? $user['avatar'] : '',
-                'sex' => isset($user['sex']) ? $user['sex'] : 0,
-            ]);
-            $user->save();
-        }
-        
+        $user = new User([
+            'account' => isset($user['account']) ? $user['account'] : '',
+            'password' => isset($user['password']) ? Hash::make($user['password']) : '',
+            'openid' => isset($user['openid']) ? $user['openid'] : '',
+            'nickname' => isset($user['nickname']) ? $user['nickname'] : '',
+            'name' => isset($user['name']) ? $user['name'] : '',
+            'avatar' => isset($user['avatar']) ? $user['avatar'] : '',
+            'sex' => isset($user['sex']) ? $user['sex'] : 0,
+        ]);
+        $user->save();
+        return $user;
+    }
+
+    /**
+     * 更新用户信息
+     */
+    public function updateUser($user, $user_info)
+    {
+        $user->update($user_info);
+        return $user;
     }
 
     /**
@@ -85,15 +92,25 @@ class OauthService extends BaseService
         }
         $user = (new WechatService())->oauthByCode($request->code);
         $original = $user->getOriginal();
-        $user_info = [
-            'openid' => $user->getId(),
-            'name' => $user->getName(),
-            'nickname' => $user->getNickname(),
-            'avatar' => $user->getAvatar(),
-            'sex' => $original['sex'],
-        ];
-        $this->storeUser($user_info);
-        return $user_info;
+
+        if (!User::where('openid', $user->getId())->exists()) {
+            $user_info = [
+                'openid' => $user->getId(),
+                'name' => $user->getName(),
+                'nickname' => $user->getNickname(),
+                'avatar' => $user->getAvatar(),
+                'sex' => $original['sex'],
+            ];
+            
+            $user = $this->storeUser($user_info);
+        } else {
+            $user = User::findByOpenid($user->getId());
+        }
+
+        
+        
+        
+        return $user->toArray();
     }
     
 }
