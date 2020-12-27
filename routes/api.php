@@ -24,11 +24,15 @@ Route::group([
 ], function (Router $router) {
     $router->post('login', 'OauthController@login')->name('api.login');
     $router->post('register', 'OauthController@register')->name('api.register');
+
+    //微信授权
+    $router->post('wechat_oauth_url', 'OauthController@wechat_oauth_redirect_url');
+    $router->get('wechat_oauth', 'OauthController@wechat_oauth');
 });
 
 Route::group([
     'namespace'     => '\App\Http\Controllers\Api',
-    'middleware'    => []
+    'middleware'    => ['auth:api']
 ], function (Router $router) {
     $router->get('order/{order}', 'OrderController@show');
     $router->get('order', 'OrderController@index');
@@ -36,7 +40,5 @@ Route::group([
     $router->post('order', 'OrderController@buy');
     $router->get('order/{order}/find', 'OrderController@find'); # 订单查询
 
-    //微信授权
-    $router->get('wechat_oauth_url', 'OauthController@wechat_oauth_redirect_url');
-    $router->get('wechat_oauth', 'OauthController@wechat_oauth');
+    $router->get('logout', 'OauthController@logout'); # 订单查询
 });

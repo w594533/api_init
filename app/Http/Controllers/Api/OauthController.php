@@ -61,4 +61,10 @@ class OauthController extends Controller
         $result = $service->wechatOauth($request);
         return $this->success($result);
     }
+
+    public function logout(OauthService $service)
+    {
+        $service->logout();
+        return $this->message('退出成功');
+    }
 }

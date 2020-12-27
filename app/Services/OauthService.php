@@ -12,9 +12,20 @@ use Cache;
 class OauthService extends BaseService
 {
 
+    /**
+     * 账号密码登录
+     */
     public function login($request)
     {
-        return $this->loginByPassword($request);
+        $user = User::where('account', $request->account)->first();
+        if (!$user) {
+            throw new InvalidRequestException('账号或者密码错误');
+        }
+        // $pwd = Hash::make($request->password);
+        if (!Hash::check($request->password, $user->password)) {
+            throw new InvalidRequestException('账号或者密码错误');
+        }
+        return $this->loginFromUser($user);
     }
 
     public function register($request)
@@ -30,21 +41,20 @@ class OauthService extends BaseService
         ]);
     }
 
-    public function loginByPassword($request)
+    /**
+     * jwt 登录
+     */
+    public function loginFromUser($user)
     {
-        $user = User::where('account', $request->account)->first();
-        if (!$user) {
-            throw new InvalidRequestException('账号或者密码错误');
-        }
-        // $pwd = Hash::make($request->password);
-        if (!Hash::check($request->password, $user->password)) {
-            throw new InvalidRequestException('账号或者密码错误');
-        }
         $token = Auth::guard('api')->fromUser($user);
-        return [
+        $result = [
             'access_token' => $token,
-            'token_type' => 'Bearer'
+            'token_type' => 'Bearer',
         ];
+        if ($user->openid) {
+            $result['openid'] = $user->openid;
+        }
+        return $result;
     }
 
     public function storeUser($user)
@@ -83,7 +93,7 @@ class OauthService extends BaseService
     }
 
     /**
-     * 微信授权
+     * 微信授权登录
      */
     public function wechatOauth($request)
     {
@@ -106,11 +116,13 @@ class OauthService extends BaseService
         } else {
             $user = User::findByOpenid($user->getId());
         }
+        \Log::debug('user', [$user]);
+        return $this->loginFromUser($user);
+    }
 
-        
-        
-        
-        return $user->toArray();
+    public function logout()
+    {
+        auth('api')->logout();
     }
     
 }
